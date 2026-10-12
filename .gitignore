@@ -1,0 +1,6 @@
+# Build-Artefakt von scripts/package_skill.py
+*.skill
+
+# Laufzeitzustand der iPhone-Warteschlange (geraetespezifisch, enthaelt Befehlsinhalte)
+.claude/skills/iphone-steuerung/state/pending.json
+.claude/skills/iphone-steuerung/state/log.jsonl
