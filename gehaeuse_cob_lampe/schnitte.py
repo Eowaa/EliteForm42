@@ -11,7 +11,8 @@ ph = G.platzhalter()
 
 TEILE = [("Unterteil", u, "#8c97a3"), ("Deckel", d, "#b9c2cc"), ("Tasterkappe", k, "#d94444"),
          ("Akku 14500", ph["Akku 14500"], "#3070cc"), ("Platine", ph["Platine"], "#1f7a3d"),
-         ("LED-Modul", ph["LED-Modul"], "#e8d36a"), ("USB-Stecker", ph["USB-Stecker"], "#cccccc")]
+         ("COB-Modul", ph["COB-Modul"], "#e8d36a"), ("Bauteile", ph["Bauteile"], "#7a5aa8"),
+         ("USB-Stecker", ph["USB-Stecker"], "#999999")]
 
 def schnitt(ax, origin, normal, h_idx, v_idx, hlab, vlab, titel, skip=()):
     seen = set()
@@ -60,22 +61,25 @@ def zeichne(ax, axis, value, h, v, titel, skip=()):
     ax.set_aspect("equal"); ax.grid(True, lw=0.3, alpha=0.5)
     ax.set_title(titel, fontsize=10)
 
-fig, axs = plt.subplots(3, 1, figsize=(13, 11))
+fig, axs = plt.subplots(3, 1, figsize=(13, 12))
 
-zeichne(axs[0], 1, 0.0, 0, 2, "Laengsschnitt y = 0   (X horizontal, Z vertikal, mm)")
-axs[0].set_xlim(-6, 99); axs[0].set_ylim(-2, 32)
+zeichne(axs[0], 0, 40.0, 1, 2,
+        "Querschnitt x = 40 mm   links Platine mit COB nach unten, rechts der Akku  (Y horizontal, Z vertikal, mm)")
+axs[0].set_xlim(-22, 22); axs[0].set_ylim(-2, 23)
 
-zeichne(axs[1], 0, 28.0, 1, 2, "Querschnitt x = 28 mm  (durch LED-Modul, Platinenauflage und Akku)")
-axs[1].set_xlim(-16, 16); axs[1].set_ylim(-2, 32)
+zeichne(axs[1], 1, G.PCB_YM, 0, 2,
+        "Laengsschnitt durch die Platinenachse y = %.1f mm" % G.PCB_YM)
+axs[1].set_xlim(-5, 93); axs[1].set_ylim(-2, 23)
 
-zeichne(axs[2], 0, 12.0, 1, 2, "Querschnitt x = 12 mm  (durch einen Schnapphaken)")
-axs[2].set_xlim(-16, 16); axs[2].set_ylim(-2, 32)
+zeichne(axs[2], 0, G.USB_X, 1, 2,
+        "Querschnitt x = %.1f mm   durch den Micro-USB-Durchbruch in der Laengswand" % G.USB_X)
+axs[2].set_xlim(-22, 22); axs[2].set_ylim(-2, 23)
 
 for a in axs:
     a.set_xlabel("mm"); a.set_ylabel("mm")
 from matplotlib.lines import Line2D
 fig.legend(handles=[Line2D([], [], color=c, lw=3, label=n) for n, _, c in TEILE],
-           loc="lower center", ncol=7, fontsize=9, frameon=False)
+           loc="lower center", ncol=8, fontsize=9, frameon=False)
 fig.tight_layout(rect=[0, 0.04, 1, 1])
 fig.savefig("bild_3_schnitte.png", dpi=140)
 print("bild_3_schnitte.png geschrieben")

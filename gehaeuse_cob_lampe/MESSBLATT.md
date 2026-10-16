@@ -1,47 +1,54 @@
 # Messblatt — COB-LED-Leuchte
 
-Die Fotos haben keinen Massstab und sind perspektivisch verzerrt. Ich konnte daraus
-nur die **Topologie** ablesen (was sitzt wo, in welcher Reihenfolge), keine Masse.
-Die Spalte "angenommen" ist das, womit v2 gerechnet ist.
+Stand: ausgewertet aus den Zollstock-Fotos (2. Fotoserie).
+Massstab ueber die cm-Teilung des Zollstocks bestimmt: 110 px/cm, Nullpunkt an der
+Kappe. **Nur Masse laengs des Zollstocks sind so belastbar** — quer zur Zollstock-
+richtung ist das Bild perspektivisch gestaucht, dort gilt die Angabe des Nutzers.
 
-**So messen:** Messschieber, jeweils an der breitesten/laengsten Stelle.
-Bezugskante fuer alle X-Masse ist die **Vorderkante der Platine auf der USB-Seite**.
+## Gemessen
 
-| Nr  | Mass                                                        | angenommen | gemessen | Parameter im Skript |
-|-----|-------------------------------------------------------------|-----------:|----------|---------------------|
-| M1  | Platine Laenge                                               | 76,0       |          | `PCB_L`             |
-| M2  | Platine Breite                                               | 17,0       |          | `PCB_B`             |
-| M3  | Platine Dicke                                                | 1,6        |          | `PCB_T`             |
-| M4  | LED-Modul (Alu-Traeger) Laenge                               | 62,0       |          | `LED_L`             |
-| M5  | LED-Modul Breite                                             | 16,0       |          | `LED_B`             |
-| M6  | LED-Modul Hoehe ueber Platinenoberseite                      | 4,0        |          | `LED_H`             |
-| M7  | Abstand LED-Modul-Vorderkante zur Platinenvorderkante        | 4,0        |          | `LED_DX`            |
-| M8  | Leuchtflaeche COB: Laenge x Breite                           | 54 x 9     |          | `FEN_L`, `FEN_B`    |
-| M9  | **Micro-USB-Richtung: stirnseitig (nach vorn) oder seitlich?**| stirnseitig|          | siehe Hinweis unten |
-| M10 | Micro-USB: Buchsenmitte ueber Platinenoberseite              | 1,3        |          | `USB_DZ`            |
-| M11 | Micro-USB: Buchsenvorderkante zur Platinenvorderkante        | 0,0        |          | `PCB_X0`            |
-| M12 | Taster: Mitte ab Platinenvorderkante                         | 70,0       |          | `TASTER_DX`         |
-| M13 | Taster: Bauhoehe ueber Platine                               | 1,6        |          | `TASTER_H`          |
-| M14 | Taster: Versatz aus der Mittellinie (0 = mittig)             | 0          |          | —                   |
-| M15 | Akku: Durchmesser ueber dem Schrumpfschlauch                 | 14,6       |          | `AKKU_D`            |
-| M16 | Akku: Laenge                                                 | 51,0       |          | `AKKU_L`            |
-| M17 | **Bauteile auf der Platinen-UNTERSEITE: hoechstes Mass**     | 0,0        |          | `PCB_LUFT`          |
-| M18 | Weitere Bauteile oben hoeher als das LED-Modul? Lage + Hoehe | keine      |          | —                   |
-| M19 | Lade-LEDs: Position ab Vorderkante, soll ein Loch dahin?     | —          |          | —                   |
-| M20 | Kabel zum Akku: an welchem Ende, Querschnitt                 | hinten     |          | —                   |
+| Nr  | Mass                                                  | Wert    | Quelle |
+|-----|-------------------------------------------------------|--------:|--------|
+| M1  | Platine Gesamtlaenge                                   | 70 mm   | Foto 1, ±1 |
+| M1a | davon breiter Hauptteil                                | 58 mm   | Foto 1 |
+| M1b | davon schmale Zunge mit Taster                         | 12 mm   | Foto 1 |
+| M2  | Platine Breite (Hauptteil)                             | 16 mm   | Nutzer: 15–17 |
+| M2a | Zunge Breite                                           | ~9,5 mm | Foto 1, Verhaeltnis |
+| M12 | Taster: Mitte ab USB-seitiger Plattenkante             | 64 mm   | Foto 1 |
+| M19 | 4 Lade-LEDs in einer Reihe, ab USB-seitiger Kante      | 54–57 mm| Foto 1 |
+| M4a | COB-Modul Breite                                       | ~13 mm  | Foto E, Verhaeltnis |
+| M8  | COB-Leuchtflaeche Breite                               | ~5,5 mm | Foto E, Verhaeltnis |
+| M21 | **Gesamtdicke der Baugruppe (COB + Platine + Bauteile)**| ~8 mm  | Foto 3, Kantenansicht |
+| M20 | Kabel zum Akku: am Zungenende                          | —       | Foto 1 |
+| M15 | Akku Durchmesser                                       | 14,6 mm | Norm 14500 |
+| M16 | Akku Laenge                                            | 50,5 mm | Norm 14500 |
 
-## Wichtigste Unsicherheiten
+## Befunde, die die Konstruktion aendern
 
-1. **M2 (Platinenbreite)** — aus dem Verhaeltnis Akkudurchmesser zu Platinenbreite
-   im Foto geschaetzt. Streubereich 15–20 mm. Das Mass bestimmt die ganze Gehaeusebreite.
-2. **M9 (USB-Richtung)** — auf Foto 2 sieht die Buchse stirnseitig aus, auf Foto 1 eher
-   seitlich. v2 setzt stirnseitig voraus. Ist sie seitlich, muss der Durchbruch in
-   die Seitenwand wandern (das ist eine Zeile im Skript, ich mache das).
-3. **M17 (Unterseite)** — v2 laesst 1,2 mm Luft zwischen Akku und Platine. Ragen dort
-   Loetstellen oder Bauteile weiter herunter, muss der Wert groesser werden.
+1. **COB-Modul und Bauteilseite liegen auf gegenueberliegenden Platinenseiten.**
+   Auf der COB-Seite ist nur das weisse Modul zu sehen, ringsum schmale Streifen
+   nackte Platine; Taster, IC und Lade-LEDs sitzen auf der Rueckseite, zwei
+   Torx-Schrauben halten den Alu-Traeger von dort durch die Platine.
+   Folge: Licht und Bedienseite zeigen zwangslaeufig in entgegengesetzte Richtungen,
+   und der Akku kann **nicht** unter der Platine liegen — er wuerde entweder das
+   Licht oder den Taster verdecken. Die Bauform aus v2 ist damit hinfaellig.
 
-## Fotos fuer eine zweite Runde
+2. **Micro-USB sitzt vermutlich an der Laengsseite**, nicht stirnseitig: in der
+   Kantenansicht und in der Gesamtansicht blickt man frontal in die Buchse,
+   waehrend die Platinenlaengsachse quer dazu laeuft. Die Oeffnung misst dort
+   7,4 x 2,5 mm, also eine normale Micro-USB-Buchse. Sicher ist das nicht.
 
-Senkrecht von oben, Lineal oder Messschieber **in derselben Ebene** daneben, je ein
-Bild von Ober- und Unterseite der Platine. Damit kann ich die Masse nachrechnen,
-statt sie zu schaetzen.
+## Noch offen
+
+| Nr  | Mass                                                        | gemessen |
+|-----|-------------------------------------------------------------|----------|
+| Nr  | Mass                                                        | in v3 angenommen |
+|-----|-------------------------------------------------------------|------------------|
+| M4  | COB-Modul Laenge                                             | 55 mm (`LED_L`) |
+| M6  | COB-Modul Hoehe ueber der Platinenunterseite                 | 4,0 mm (`LED_H`) |
+| M7  | COB-Modul-Vorderkante ab Platinenvorderkante                 | 2,0 mm (`LED_DX`) |
+| M11 | Micro-USB: Mitte ab Platinenvorderkante                      | 26 mm (`USB_DX`), Oeffnung 16 x 11 mm faengt Fehler ab |
+| M13 | Taster: Bauhoehe ueber der Platine                           | 1,6 mm (`TASTER_H`) |
+| M22 | Hoechste Bauteile auf der Rueckseite                         | 2,5 mm (`BAUTEIL_H`) |
+
+M9 ist beantwortet: **Micro-USB an der Laengsseite.**

@@ -1,97 +1,119 @@
-# Gehaeuse fuer die COB-LED-Leuchte (v2)
+# Gehaeuse fuer die COB-LED-Leuchte (v3)
 
-Zweiteiliges Gehaeuse fuer das Leuchtmittel aus den Fotos: COB-LED-Modul auf Platine,
-14500-Li-Ion-Zelle (3,7 V / 750 mAh), Micro-USB-Ladebuchse, Taster.
+Flacher Riegel fuer das Leuchtmittel aus den Fotos: COB-LED-Modul auf Platine,
+14500-Li-Ion-Zelle (3,7 V / 750 mAh), Micro-USB-Ladebuchse an der Laengsseite,
+Taster und vierstellige Ladeanzeige.
 
-**Aussenmasse 95 x 24,6 x 28,8 mm.**
+**Aussenmasse 89,5 x 37,6 x 19,5 mm.**
+
+## Warum die Bauform gegenueber v2 gewechselt hat
+
+Die Messung hat ergeben, dass **COB-Modul und Bauteilseite auf gegenueberliegenden
+Platinenseiten** sitzen: auf der einen Seite nur das weisse COB-Modul, auf der
+anderen IC, Taster und die vier Lade-LEDs, verschraubt mit zwei Torx-Schrauben
+durch die Platine. Licht und Bedienseite zeigen damit zwangslaeufig in
+entgegengesetzte Richtungen, und der Akku kann nicht unter der Platine liegen —
+er wuerde entweder das Licht oder den Taster verdecken.
+
+Deshalb liegt der Akku jetzt **neben** der Platine: das Licht tritt nach unten
+aus dem Boden aus, Taster und Ladeanzeige sitzen oben im Deckel.
 
 ## Dateien
 
 | Datei | Inhalt | Druckzeit ca. |
 |-------|--------|---------------|
-| `04_Passprobe_v2.stl`  | **Zuerst drucken.** 30-mm-Scheibe vom vorderen Ende, Unter- und Oberteil, beide bereits in Drucklage | 25 min |
-| `01_Unterteil_v2.stl`  | Wanne mit Akkumulde, Platinenschacht, USB-Durchbruch, Rastfenstern, Schraubblock | 2,5 h |
-| `02_Deckel_v2.stl`     | Platte mit Lichtfenster, Diffusortasche, Tasterloch, Fuehrungslippen und 6 Schnapphaken | 1 h |
-| `03_Tasterkappe_v2.stl`| Druckkappe mit Bund als Auszugssicherung | 5 min |
-| `gehaeuse.py`          | parametrisches Modell, erzeugt alle STLs neu | — |
+| `04_Passprobe_v3.stl`  | **Zuerst drucken.** 34-mm-Scheibe durch den USB-Durchbruch, Unter- und Oberteil, beide in Drucklage | 30 min |
+| `01_Unterteil_v3.stl`  | Wanne mit Modulschacht, Lichtfenster im Boden, Akkumulde, USB-Durchbruch, 4 Schraubdomen | 2,5 h |
+| `02_Deckel_v3.stl`     | Platte mit Tasterloch, Fenster fuer die Ladeanzeige, Niederhaltern und 4 Senkungen | 1 h |
+| `03_Tasterkappe_v3.stl`| Druckkappe mit Bund als Auszugssicherung, 11 mm Schaft | 5 min |
+| `gehaeuse.py`          | parametrisches Modell, erzeugt alle STLs und prueft sie | — |
 | `schnitte.py`          | masstaebliche Schnittzeichnungen | — |
-| `explosion.py`         | Explosionszeichnung und Deckel-Unteransicht (eigener Z-Buffer-Renderer) | — |
-| `render.py`            | einfache 3D-Vorschau | — |
-| `MESSBLATT.md`         | welche Masse noch gemessen werden muessen | — |
+| `explosion.py`         | Explosionszeichnung und Innenansicht (eigener Z-Buffer-Renderer) | — |
+| `MESSBLATT.md`         | was gemessen ist und was noch fehlt | — |
 
 ## Aufbau
 
 ```
-Z = 28,8  Deckeloberseite
-Z = 26,8  Innendecke / Deckelauflage      3,0 mm Luft ueber dem LED-Modul
-Z = 19,8  Platinenoberseite (Trennebene)
-Z = 18,2  Platinenunterseite              1,2 mm Luft ueber dem Akku
-Z =  2,0  Akkuboden                       2,0 mm Material darunter
+Querschnitt, von links nach rechts:
+
+  Platinengasse 16,6            Steg 1,6     Akkugasse 15,4
+  ┌──────────────────┐          ┌──┐         ┌──────────────┐
+  │ Bauteile 2,5     │ Z=10,1   │  │         │              │
+  │ Platine 1,6      │ Z= 7,6   │  │         │  Akku Ø14,6  │ Z=16,9
+  │ COB-Modul 4,0    │ Z= 6,0   │  │         │              │
+  │ Lichtfenster     │ Z= 2,0   │  │         │              │ Z= 1,5
+  └──────────────────┘ Z= 0     └──┘         └──────────────┘
 ```
 
-Der Akku liegt unten in einer halbrunden Mulde, die oben offen ist — er wird von
-oben eingelegt. Darueber sitzt die Platine auf zwei durchgehenden Auflageleisten
-(je 1,0 mm Auflage pro Kante) in einem 17,6 mm breiten Schacht. Darueber die
-LED-Kammer. Der Deckel wird **senkrecht** aufgesetzt, rastet mit 3 Haken je Seite
-in die Fenster der Seitenwaende und wird hinten mit 2 Schrauben gesichert.
+Das COB-Modul liegt flach auf dem Boden, rings um das Lichtfenster bleiben 1,5 mm
+Auflagerand. Die Platine liegt auf zwei durchgehenden Leisten (1,1 mm Auflage je
+Kante) und wird vom Deckel mit fuenf Niederhaltern gehalten. Der Akku liegt in
+einer Halbrundmulde; die Kabel laufen hinten ueber den Trennsteg.
 
 ## Druck
 
-- **Material: PETG.** Die COB-LED wird warm, PLA steht bei Dauerbetrieb direkt
-  unter der Leuchtflaeche ueber die Zeit. PLA geht fuer Passprobe und Testlauf.
+- **Material: PETG.** Das COB-Modul liegt direkt auf dem Boden, dort wird es warm.
+  Fuer Passprobe und Testlauf reicht PLA.
 - 0,2 mm Schichthoehe, 3 Perimeter, 20 % Infill, Duese 0,4 mm.
-- **Keine Stuetzen noetig** bei dieser Ausrichtung:
+- **Keine Stuetzen noetig:**
   - Unterteil: Boden auf dem Bett.
-  - Deckel: **Oberseite (die mit dem Lichtfenster) auf dem Bett**, Lippen und
-    Haken zeigen nach oben. Die Senkungen fuer die Schraubenkoepfe liegen dann
-    auf dem Bett und werden sauber.
-  - Tasterkappe: aufrecht, so wie sie in der Datei liegt.
-- Die Schnapphaken sind das empfindlichste Teil. Bei sproedem Filament lieber
-  `HAKEN_U` im Skript von 0,6 auf 0,4 setzen.
+  - Deckel: **Oberseite auf dem Bett**, Niederhalter nach oben. Die Senkungen
+    liegen dann auf dem Bett und werden sauber.
+  - Tasterkappe: aufrecht, wie in der Datei.
 
 ## Zusaetzlich noetig
 
-- 2 x Schraube M3 x 10, selbstschneidend fuer Kunststoff (Kernloch 2,5 mm ist vorgesehen)
-- optional: Diffusor 58 x 13 x 1 mm aus Acryl oder PETG, wird von innen in die
-  Tasche hinter dem Fenster gelegt. Ohne Diffusor leuchtet die COB frei durch den
-  54 x 9 mm Durchbruch.
+- 4 x Schraube M3 x 12, selbstschneidend fuer Kunststoff (Kernloch 2,5 mm vorgesehen)
+- optional: Diffusorplaettchen 9 x 15 x 1 mm fuer das Fenster der Ladeanzeige,
+  Tasche ist vorgesehen
+- optional: das Lichtfenster von aussen mit klarer Folie abdecken, wenn es
+  staubdicht sein soll
+
+Die vier Lade-LEDs sitzen 9,9 mm unter dem Deckelfenster. Sichtbar sind sie so
+schon, deutlich heller wird es mit vier Stiften aus klarem Filament (1,75 mm,
+auf 9,8 mm abgelaengt) als Lichtleiter.
 
 ## Montage
 
-1. Akku von oben in die Mulde legen, Kabel nach hinten durch den Spalt neben dem
-   Platinenende fuehren.
-2. Platine von oben in den Schacht legen, USB-Buchse nach vorn in den Durchbruch.
-3. Tasterkappe von unten durch das Tasterloch im Deckel stecken (Bund bleibt innen).
-4. Deckel senkrecht aufsetzen und gleichmaessig niederdruecken, bis alle 6 Haken
-   hoerbar einrasten.
-5. Die 2 Schrauben hinten eindrehen.
-
-Oeffnen: Schrauben heraus, mit einer duennen Klinge durch die Rastfenster der
-Seitenwand die Haken nacheinander nach innen druecken.
+1. Tasterkappe von unten durch das Loch im Deckel stecken, der Bund bleibt innen.
+2. Platine mit dem COB-Modul nach unten von oben in die linke Gasse legen. Das
+   Modul laeuft in den Schacht und sitzt auf dem Boden, die USB-Buchse zeigt in
+   den Durchbruch der Laengswand.
+3. Akku in die Mulde legen, Kabel hinten ueber den Trennsteg zur Platine fuehren.
+4. Deckel auflegen und die vier Schrauben eindrehen.
 
 ## Masse aendern
 
-Alle Masse stehen als benannte Parameter oben in `gehaeuse.py`. Nach einer Aenderung:
+Alle Masse stehen als benannte Parameter oben in `gehaeuse.py`. Danach:
 
 ```bash
-python3 gehaeuse.py     # prueft Dichtheit, Kollisionen, Einbaubarkeit und exportiert
-python3 schnitte.py     # Schnittzeichnung zur Kontrolle
-python3 explosion.py    # Explosionszeichnung und Deckel von unten
+python3 gehaeuse.py     # prueft und exportiert
+python3 schnitte.py     # Schnittzeichnung
+python3 explosion.py    # Explosion und Innenansicht
 ```
 
-Das Skript bricht mit `FEHLER` ab, wenn sich Teile durchdringen oder der Akku nicht
-mehr von oben einlegbar waere.
+Das Skript bricht mit `FEHLER` ab, wenn sich Teile durchdringen oder wenn Akku
+oder Platine nicht mehr senkrecht einlegbar waeren.
+
+Haeufige Korrekturen:
+- USB-Buchse sitzt woanders als angenommen → `USB_DX` (Abstand ab Platinen-
+  vorderkante). Die Oeffnung ist mit 16 x 11 mm bewusst grosszuegig.
+- USB-Buchse zeigt zur anderen Laengsseite → Platine und Akkugasse tauschen,
+  dazu das Vorzeichen von `PCB_YM` und `AKKU_YM` drehen.
+- COB-Modul laenger oder kuerzer → `LED_L`, `LED_DX`. Das Lichtfenster folgt
+  automatisch.
 
 ## Was gemessen ist und was nicht
 
-**Gemessen: nichts.** Alle Masse der Einbauteile sind aus den Fotos geschaetzt —
-die Bilder haben keinen Massstab und sind perspektivisch verzerrt. Verlaessliche
-Groessen sind nur die Normmasse der 14500-Zelle (Ø 14,5 x 50 mm).
-Siehe `MESSBLATT.md`. Deshalb zuerst die Passprobe drucken.
+Gemessen sind Platinenlaenge, die Lage von Taster und Lade-LEDs sowie die
+Gesamtdicke der Baugruppe — alles aus den Zollstock-Fotos, siehe `MESSBLATT.md`.
+Geschaetzt sind noch Laenge und Hoehe des COB-Moduls und die Lage der
+USB-Buchse in Laengsrichtung. Deshalb zuerst die Passprobe drucken.
 
 ## Sicherheit
 
 Die Zelle ist fest verloetet und sitzt in einem geschlossenen Gehaeuse. Beim
-Schliessen darauf achten, dass kein Kabel zwischen Deckel und Wand eingeklemmt wird
-— eine gequetschte Litze an einer Li-Ion-Zelle ist ein Kurzschlussrisiko. Das
-Lichtfenster nicht abkleben, es ist der Waermeabfuhrweg der COB-LED.
+Schliessen darauf achten, dass kein Kabel zwischen Deckel und Wand oder Trennsteg
+eingeklemmt wird — eine gequetschte Litze an einer Li-Ion-Zelle ist ein
+Kurzschlussrisiko. Das Lichtfenster nicht abkleben, es ist der Waermeabfuhrweg
+des COB-Moduls.

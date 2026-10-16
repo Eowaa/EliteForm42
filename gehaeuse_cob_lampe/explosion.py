@@ -83,75 +83,61 @@ def beschrifte(ax, anker, text, dx, dy, groesse, w, h):
                                 shrinkA=0, shrinkB=6))
 
 # ===================================================================== 1
-ph  = G.platzhalter()
-cob = G.B(G.FEN_X0 - 1, G.FEN_X1 + 1, -(G.FEN_B/2 + 1), G.FEN_B/2 + 1,
-          G.Z_PCB_OK + G.LED_H - 0.4, G.Z_PCB_OK + G.LED_H + 0.06)  # 0,06 gegen Z-Fighting
-hoch = lambda m, dz: (m.copy().apply_translation([0, 0, dz]) or m)
-
-def versetzt(m, dz):
-    m = m.copy(); m.apply_translation([0, 0, dz]); return m
+ph = G.platzhalter()
+def versetzt(m, dz, dy=0.0):
+    m = m.copy(); m.apply_translation([0, dy, dz]); return m
 
 TEILE = [
-    ("Unterteil",                    versetzt(G.unterteil(), 0),      "#9fa8b4"),
-    ("Akku 14500  3,7 V / 750 mAh",  versetzt(ph["Akku 14500"], 26),  "#2f6fd0"),
-    ("Platine",                      versetzt(ph["Platine"], 48),     "#1d7a3c"),
-    ("COB-LED-Modul",                versetzt(ph["LED-Modul"], 48),   "#b9bec6"),
-    ("Leuchtflaeche",                versetzt(cob, 48),               "#f6e07a"),
-    ("Deckel",                       versetzt(G.deckel(), 82),        "#c2cad4"),
-    ("Tasterkappe",                  versetzt(G.tasterkappe(), 108),  "#d94444"),
+    ("Unterteil",                   versetzt(G.unterteil(), 0),    "#9fa8b4"),
+    ("COB-Modul, Licht nach unten", versetzt(ph["COB-Modul"], 24),        "#d8b43a"),
+    ("Platine",                     versetzt(ph["Platine"], 33),          "#1d7a3c"),
+    ("Bauteile, Taster, Lade-LEDs", versetzt(ph["Bauteile"], 33),         "#7a5aa8"),
+    ("Akku 14500  3,7 V / 750 mAh", versetzt(ph["Akku 14500"], 30, 24.0), "#2f6fd0"),
+    ("Deckel",                      versetzt(G.deckel(), 58),             "#c2cad4"),
+    ("Tasterkappe",                 versetzt(G.tasterkappe(), 80),        "#d94444"),
 ]
-img, proj, (w, h) = render(TEILE, 38, 22)
-fig, ax = plt.subplots(figsize=(15, 11.5))
+img, proj, (w, h) = render(TEILE, 40, 24, 1500, 1200)
+fig, ax = plt.subplots(figsize=(15, 12))
 ax.imshow(img, interpolation="bilinear"); ax.set_axis_off()
 
-mitten = [proj(m.vertices).mean(0) for _, m, _ in TEILE]
-for i in range(len(TEILE) - 1):
-    ax.plot(*zip(mitten[i], mitten[i+1]), ls=(0, (6, 6)), lw=1.1, color="#8a8f96", zorder=3)
+LAB = {"Unterteil": (-0.30, 0.06), "COB-Modul, Licht nach unten": (-0.32, 0.02),
+       "Platine": (-0.32, -0.07), "Bauteile, Taster, Lade-LEDs": (-0.32, -0.15),
+       "Akku 14500  3,7 V / 750 mAh": (0.26, 0.10),
+       "Deckel": (0.28, -0.02), "Tasterkappe": (0.28, -0.06)}
+for name, mesh, _ in TEILE:
+    beschrifte(ax, proj(mesh.vertices).mean(0), name, *LAB[name], 13, w, h)
 
-LAB = {"Unterteil": (-0.33, 0.04), "Akku 14500  3,7 V / 750 mAh": (-0.33, 0.0),
-       "Platine": (-0.33, 0.0), "COB-LED-Modul": (0.34, 0.03),
-       "Leuchtflaeche": (0.34, -0.03), "Deckel": (0.34, 0.0), "Tasterkappe": (0.34, 0.0)}
-for (name, _, _), mp in zip(TEILE, mitten):
-    beschrifte(ax, mp, name, *LAB[name], 13, w, h)
-
-ax.set_title("COB-LED-Leuchte — Explosionszeichnung v2       "
-             "Gehaeuse 95 x 24,6 x 28,8 mm", fontsize=15, pad=14)
-ax.text(0.5, 0.012, "Montage von unten nach oben: Akku einlegen, Platine einlegen, Tasterkappe "
-        "von unten in den Deckel, Deckel senkrecht aufsetzen bis die Haken einrasten, "
-        "2 Schrauben M3x10 hinten",
+ax.set_title("COB-LED-Leuchte — Explosionszeichnung v3       "
+             "Gehaeuse %.0f x %.1f x %.1f mm" % (G.X_E-G.X_A, 2*G.Y_A, G.H_GES),
+             fontsize=15, pad=14)
+ax.text(0.5, 0.012, "Akku neben der Platine. Das COB-Modul liegt auf dem Boden und strahlt nach "
+        "unten durch das Fenster; Taster und Lade-LEDs sitzen auf der Platinenrueckseite "
+        "und zeigen nach oben zum Deckel",
         transform=fig.transFigure, ha="center", fontsize=11, color="#404850")
 fig.tight_layout(rect=[0, 0.035, 1, 1])
 fig.savefig("bild_1_explosion.png", dpi=110, facecolor="white"); plt.close(fig)
 
 # ===================================================================== 2
-dk = G.deckel()
-T = trimesh.transformations.rotation_matrix(np.pi, [1, 0, 0], [G.INNEN_L/2, 0, G.H_GES/2])
-dk.apply_transform(T)
-def ank(p):                       # Weltpunkt -> gedreht -> Bildpunkt
-    q = np.append(np.asarray(p, float), 1.0) @ T.T
-    return q[:3]
-
-img2, proj2, (w2, h2) = render([("Deckel", dk, "#c2cad4")], 38, 26, 1400, 900, 0.80)
-fig, ax = plt.subplots(figsize=(14, 9))
+img2, proj2, (w2, h2) = render([("Unterteil", G.unterteil(), "#9fa8b4")], 40, 42, 1400, 950, 0.80)
+fig, ax = plt.subplots(figsize=(14, 9.5))
 ax.imshow(img2, interpolation="bilinear"); ax.set_axis_off()
 
 ANKER = [
-    ("Schnapphaken, 3 je Seite", (G.HAKEN_X[1], G.YI + G.HAKEN_U, G.HAKEN_Z1), -0.30, 0.10),
-    ("Fuehrungslippe",           (58.0, G.LIP_Y_OUT, G.LIP_Z0 + 1.5),          -0.30, -0.06),
-    ("Platinen-Niederhalter",    (5.8, G.NH_Y1, G.NH_Z0),                       0.28, 0.20),
-    ("Diffusortasche 58 x 13 x 1", (G.FEN_X1 + 1, G.FEN_B/2 + G.DIFF_SP, G.Z_INNEN + G.DIFF_T),
-                                                                               -0.30, 0.14),
-    ("Lichtfenster 54 x 9",      (G.FEN_X0 + 30, 0.0, G.Z_INNEN + G.DIFF_T),    0.28, -0.04),
-    ("Tasterloch",               (G.TASTER_X, 0.0, G.Z_INNEN),                  0.40, 0.13),
-    ("Senkung M3, 2x",           (G.SCHRAUBE_X, G.SCHRAUBE_Y, G.H_GES),         0.27, 0.14),
+    ("Akkumulde",                 (42, G.AKKU_YM, G.Z_AKKU_M - G.AKKU_R + 1),      0.30,  0.10),
+    ("Trennsteg",                 (42, (G.TRENN_Y0+G.TRENN_Y1)/2, G.Z_INNEN),       0.30, -0.02),
+    ("Kabeldurchlass",            (G.INNEN_L-5, (G.TRENN_Y0+G.TRENN_Y1)/2, 8.0),    0.30,  0.20),
+    ("Modulschacht 13,8 mm",      (30, G.PCB_YM, G.BODEN_PCB + 0.5),               -0.32,  0.08),
+    ("Auflageleisten fuer die Platine", (20, G.PCB_Y0 + G.LEISTE_B/2, G.Z_PCB_UK), -0.32,  0.00),
+    ("Lichtfenster 51 x 10 im Boden",   (G.FEN_X0+12, G.PCB_YM, 0.0),              -0.32,  0.18),
+    ("Micro-USB-Durchbruch",      (G.USB_X, -G.Y_A, G.USB_ZM),                     -0.32, -0.12),
+    ("Schraubdom, 4x M3",         (G.SCHR_X[0], G.SCHR_Y[0], G.Z_INNEN),            0.30, -0.18),
 ]
 for text, p, dx, dy in ANKER:
-    beschrifte(ax, proj2(ank(p))[0], text, dx, dy, 12.5, w2, h2)
+    beschrifte(ax, proj2(np.asarray(p, float))[0], text, dx, dy, 12.5, w2, h2)
 
-ax.set_title("Deckel von unten — Rast- und Fuehrungsgeometrie", fontsize=15, pad=14)
-ax.text(0.5, 0.015, "In dieser Lage wird der Deckel auch gedruckt: Lichtfenster-Seite auf dem "
-        "Bett, Lippen und Haken nach oben, keine Stuetzen noetig",
+ax.set_title("Unterteil von oben — Platinengasse links, Akkugasse rechts", fontsize=15, pad=14)
+ax.text(0.5, 0.015, "In dieser Lage wird gedruckt: Boden auf dem Bett, keine Stuetzen noetig",
         transform=fig.transFigure, ha="center", fontsize=11, color="#404850")
 fig.tight_layout(rect=[0, 0.04, 1, 1])
-fig.savefig("bild_4_deckel_unten.png", dpi=110, facecolor="white"); plt.close(fig)
-print("bild_1_explosion.png und bild_4_deckel_unten.png geschrieben")
+fig.savefig("bild_4_unterteil_innen.png", dpi=110, facecolor="white"); plt.close(fig)
+print("bild_1_explosion.png und bild_4_unterteil_innen.png geschrieben")
