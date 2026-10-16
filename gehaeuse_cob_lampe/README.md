@@ -15,7 +15,8 @@ Zweiteiliges Gehaeuse fuer das Leuchtmittel aus den Fotos: COB-LED-Modul auf Pla
 | `03_Tasterkappe_v2.stl`| Druckkappe mit Bund als Auszugssicherung | 5 min |
 | `gehaeuse.py`          | parametrisches Modell, erzeugt alle STLs neu | — |
 | `schnitte.py`          | masstaebliche Schnittzeichnungen | — |
-| `render.py`            | 3D-Vorschaubilder | — |
+| `explosion.py`         | Explosionszeichnung und Deckel-Unteransicht (eigener Z-Buffer-Renderer) | — |
+| `render.py`            | einfache 3D-Vorschau | — |
 | `MESSBLATT.md`         | welche Masse noch gemessen werden muessen | — |
 
 ## Aufbau
@@ -75,6 +76,7 @@ Alle Masse stehen als benannte Parameter oben in `gehaeuse.py`. Nach einer Aende
 ```bash
 python3 gehaeuse.py     # prueft Dichtheit, Kollisionen, Einbaubarkeit und exportiert
 python3 schnitte.py     # Schnittzeichnung zur Kontrolle
+python3 explosion.py    # Explosionszeichnung und Deckel von unten
 ```
 
 Das Skript bricht mit `FEHLER` ab, wenn sich Teile durchdringen oder der Akku nicht
