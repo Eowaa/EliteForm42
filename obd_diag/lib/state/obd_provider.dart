@@ -4,9 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../data/vin_decoder.dart';
 import '../obd/dtc.dart';
 import '../obd/elm327_client.dart';
+import '../obd/iso_tp.dart';
 import '../obd/obd_pid.dart';
+import '../obd/readiness.dart';
 
 enum ObdStatus { idle, scanning, connecting, initializing, ready, error }
 
@@ -26,6 +29,10 @@ class ObdProvider extends ChangeNotifier {
   /// Kurzer Verlauf für die Sparklines.
   final Map<String, List<double>> history = <String, List<double>>{};
   static const _historyLength = 60;
+
+  VehicleInfo? vehicle;
+  ReadinessReport? readiness;
+  final VinDecoder _vinDecoder = VinDecoder();
 
   List<Dtc> storedDtcs = <Dtc>[];
   List<Dtc> pendingDtcs = <Dtc>[];
@@ -110,6 +117,7 @@ class ObdProvider extends ChangeNotifier {
 
       adapterVersion = await client.initialize();
       await _probeSupportedPids();
+      await _identifyVehicle();
 
       status = ObdStatus.ready;
       notifyListeners();
@@ -131,6 +139,8 @@ class ObdProvider extends ChangeNotifier {
     storedDtcs = <Dtc>[];
     pendingDtcs = <Dtc>[];
     milStatus = null;
+    readiness = null;
+    vehicle = null;
     adapterVersion = null;
     status = ObdStatus.idle;
     notifyListeners();
@@ -215,7 +225,9 @@ class ObdProvider extends ChangeNotifier {
 
     try {
       final statusRaw = await client.send('0101');
-      milStatus = parseMilStatus(extractPayload(statusRaw, '0101') ?? const []);
+      final statusBytes = extractPayload(statusRaw, '0101') ?? const <int>[];
+      milStatus = parseMilStatus(statusBytes);
+      readiness = parseReadiness(statusBytes);
 
       storedDtcs = parseDtcResponse(
         await client.send('03', timeout: const Duration(seconds: 10)),
@@ -265,6 +277,44 @@ class ObdProvider extends ChangeNotifier {
     }
   }
 
+  /// Liest die VIN über Mode 09 PID 02 und schlägt sie bei vPIC nach.
+  ///
+  /// Scheitert still: ältere Fahrzeuge unterstützen Mode 09 nicht, und ohne
+  /// Netz gibt es keine Dekodierung. Beides darf die Verbindung nicht
+  /// blockieren.
+  Future<void> _identifyVehicle() async {
+    try {
+      final raw = await client.sendWithHeaders('0902');
+      final vin = parseVin(raw);
+      if (vin == null) return;
+      vehicle = VehicleInfo(vin: vin);
+      notifyListeners();
+      vehicle = await _vinDecoder.decode(vin);
+      notifyListeners();
+    } on ObdException {
+      // Mode 09 nicht unterstützt – kein Grund abzubrechen.
+    }
+  }
+
+  /// Prüfbereitschaft für die AU-Vorprüfung.
+  Future<void> readReadiness() async {
+    if (!client.isConnected) return;
+
+    final wasPolling = _polling;
+    _polling = false;
+    try {
+      final raw = await client.send('0101');
+      final bytes = extractPayload(raw, '0101');
+      if (bytes != null) readiness = parseReadiness(bytes);
+      notifyListeners();
+    } on ObdException catch (e) {
+      errorMessage = e.message;
+      notifyListeners();
+    } finally {
+      if (wasPolling) _startPolling();
+    }
+  }
+
   void _fail(String message) {
     status = ObdStatus.error;
     errorMessage = message;
@@ -276,6 +326,7 @@ class ObdProvider extends ChangeNotifier {
     _polling = false;
     _scanSub?.cancel();
     client.disconnect();
+    _vinDecoder.close();
     super.dispose();
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../obd/dtc.dart';
+import '../obd/readiness.dart';
 import '../state/obd_provider.dart';
 
 class DtcPage extends StatelessWidget {
@@ -28,6 +29,8 @@ class DtcPage extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 _MilCard(status: obd.milStatus),
+                const SizedBox(height: 16),
+                _ReadinessCard(report: obd.readiness),
                 const SizedBox(height: 16),
                 _Section(
                   title: 'Gespeicherte Fehler (Mode 03)',
@@ -120,6 +123,57 @@ class _MilCard extends StatelessWidget {
           lampOn ? 'Motorkontrollleuchte aktiv' : 'Keine Warnleuchte aktiv',
         ),
         subtitle: Text('${status!.dtcCount} Code(s) im Speicher'),
+      ),
+    );
+  }
+}
+
+/// Prüfbereitschaft: der Teil, den vor dem TÜV jeder wissen will.
+class _ReadinessCard extends StatelessWidget {
+  const _ReadinessCard({required this.report});
+  final ReadinessReport? report;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = report;
+    if (r == null) return const SizedBox.shrink();
+
+    final pending = r.pending;
+    final ready = r.readyForInspection;
+
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: Icon(
+              ready ? Icons.verified : Icons.pending_actions,
+              color: ready ? Colors.green : Colors.orange,
+            ),
+            title: Text(ready ? 'AU-Vorprüfung bestanden' : 'Noch nicht AU-fähig'),
+            subtitle: Text(
+              ready
+                  ? 'Alle vorhandenen Monitore sind durchgelaufen.'
+                  : '${pending.length} Monitor(e) noch nicht abgeschlossen '
+                      '(${r.compressionIgnition ? 'Diesel' : 'Benziner'}).',
+            ),
+          ),
+          if (!ready)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final monitor in pending)
+                    Chip(
+                      label: Text(monitor.name),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

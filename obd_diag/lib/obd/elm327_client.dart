@@ -160,6 +160,25 @@ class Elm327Client {
     }
   }
 
+  /// Führt eine Anfrage mit eingeschalteten CAN-Headern aus und schaltet sie
+  /// danach wieder ab.
+  ///
+  /// Mehrrahmige Antworten (VIN, mehr als drei Fehlercodes, später UDS) sind
+  /// ohne Header nicht auswertbar: man sieht sonst nicht, welche Zeile zu
+  /// welchem Steuergerät gehört. Die Flusskontrolle übernimmt der ELM327
+  /// selbst, darum genügt das Umschalten.
+  Future<String> sendWithHeaders(
+    String command, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    await send('ATH1');
+    try {
+      return await send(command, timeout: timeout);
+    } finally {
+      await send('ATH0');
+    }
+  }
+
   /// Bringt den Adapter in einen definierten Zustand und prüft, ob überhaupt
   /// ein Fahrzeugbus antwortet.
   Future<String> initialize() async {

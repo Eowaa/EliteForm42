@@ -12,6 +12,7 @@ dependencies:
   flutter_blue_plus: ^1.32.12
   provider: ^6.1.2
   permission_handler: ^11.3.1
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:

@@ -89,10 +89,13 @@ class _ConnectedCard extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: const Icon(Icons.check_circle, color: Colors.green),
-        title: Text(obd.client.deviceName ?? 'Adapter'),
+        title: Text(obd.vehicle?.displayName ?? obd.client.deviceName ?? 'Adapter'),
         subtitle: Text(
-          '${obd.adapterVersion ?? ''}\n'
-          '${obd.activePids.length} unterstützte Messwerte erkannt',
+          [
+            if (obd.vehicle != null) 'VIN ${obd.vehicle!.vin}',
+            if (obd.adapterVersion != null) obd.adapterVersion!,
+            '${obd.activePids.length} unterstützte Messwerte erkannt',
+          ].join('\n'),
         ),
         isThreeLine: true,
       ),
