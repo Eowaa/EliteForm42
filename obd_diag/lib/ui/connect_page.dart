@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/obd_provider.dart';
+import 'probe_page.dart';
 
 class ConnectPage extends StatelessWidget {
   const ConnectPage({super.key});
@@ -63,7 +64,21 @@ class ConnectPage extends StatelessWidget {
               subtitle: Text(
                 '${result.device.remoteId} · ${result.rssi} dBm',
               ),
-              trailing: const Icon(Icons.chevron_right),
+              trailing: IconButton(
+                tooltip: 'Adapter testen',
+                icon: const Icon(Icons.biotech),
+                onPressed: busy || obd.probing
+                    ? null
+                    : () async {
+                        final probe = await obd.probeDevice(result.device);
+                        if (!context.mounted) return;
+                        await Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => ProbePage(result: probe),
+                          ),
+                        );
+                      },
+              ),
               onTap: busy ? null : () => obd.connect(result.device),
             ),
           if (!scanning && !busy && obd.scanResults.isEmpty)

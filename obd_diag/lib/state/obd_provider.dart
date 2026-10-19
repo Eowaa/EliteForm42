@@ -5,6 +5,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../data/vin_decoder.dart';
+import '../obd/adapter_probe.dart';
 import '../obd/dtc.dart';
 import '../obd/elm327_client.dart';
 import '../obd/iso_tp.dart';
@@ -40,6 +41,9 @@ class ObdProvider extends ChangeNotifier {
   bool dtcBusy = false;
 
   bool _polling = false;
+
+  /// Läuft gerade ein Adaptertest?
+  bool probing = false;
 
   /// PIDs, die das Fahrzeug laut Mode 01 PID 00/20 tatsächlich unterstützt.
   /// Vor der Prüfung werden alle angezeigt.
@@ -98,6 +102,21 @@ class ObdProvider extends ChangeNotifier {
     _scanSub = null;
     if (status == ObdStatus.scanning) {
       status = ObdStatus.idle;
+      notifyListeners();
+    }
+  }
+
+  /// Testet ein Gerät, ohne es dauerhaft zu verbinden. Nützlich bei
+  /// Adaptern, von denen unklar ist, ob sie ELM327 sprechen.
+  Future<ProbeResult> probeDevice(BluetoothDevice device) async {
+    await stopScan();
+    probing = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      return await AdapterProbe().run(device);
+    } finally {
+      probing = false;
       notifyListeners();
     }
   }

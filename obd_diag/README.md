@@ -25,6 +25,8 @@ Funktionsfähig:
 - **Readiness-Monitore** für die AU-Vorprüfung, Benzin und Diesel getrennt benannt
 - **UDS-Fehlercodes** (ISO 14229-1): 3-Byte-Codes mit genormtem Failure Type Byte
 - **Bericht-Import** aus Werkstatt-App-Exporten (eigene Messdaten des Nutzers)
+- **Adaptertest**: zeigt GATT-Profil und Antwortverhalten eines unbekannten
+  Adapters und sagt, ob er nutzbar ist
 
 Noch offen – siehe Roadmap unten.
 
@@ -79,7 +81,26 @@ iOS braucht es zwingend einen BLE-Adapter oder ein MFi-Gerät.
 | ELM327 BLE (Vgate iCar Pro BLE o. ä.) | ✓ | ✓ | ~25–40 €, gute Wahl für den Start |
 | ELM327 Bluetooth Classic | ✓ | ✗ | iOS-seitig systemisch nicht ansprechbar |
 | OBDLink CX / MX+ (STN2120) | ✓ | ✓ | **Empfehlung**: veröffentlichtes Datenblatt, RAW-CAN für UDS und opendbc |
-| Topdon TopScan | ? | ? | Pairing erfolgt in Topdons eigener App; Dritt-App-Support ist nicht dokumentiert. Vor dem Einplanen mit einer generischen App testen |
+| Topdon TopScan (Pro) | ? | ? | Pairing erfolgt in Topdons eigener App; Dritt-App-Support ist nicht dokumentiert. Mit dem **Adaptertest** der App klären, bevor man darauf baut |
+
+### Unbekannten Adapter einschätzen
+
+In der Geräteliste führt jeder Eintrag einen Test-Knopf. Der verbindet
+einmalig, listet das vollständige GATT-Profil auf und schickt `ATZ`, `ATI`,
+`STI`, `ATE0` und `ATRV`. Das Ergebnis ist eine von fünf Aussagen:
+
+| Ergebnis | Bedeutung |
+|---|---|
+| ELM327-kompatibel | nutzbar, Kennung erkannt |
+| Antwortet ohne Kennung | spricht etwas, aber kein ELM327 – eigenes Protokoll möglich |
+| Keine Antwort | Datenkanal da, aber stumm auf Standardbefehle |
+| Kein Datenkanal | kein Dienst mit Schreib- **und** Benachrichtigungskanal |
+| Verbindung gescheitert | schon auf BLE-Ebene |
+
+Der Bericht lässt sich als Text kopieren. Verwendet werden nur der
+öffentliche GATT-Aufbau des Geräts und der dokumentierte
+ELM327-Befehlssatz: Antwortet ein Adapter darauf nicht, ist das die
+Antwort.
 
 Der UART-Service wird nicht über eine festgelegte UUID gesucht, sondern über
 den ersten Service, der eine beschreibbare **und** eine benachrichtigende
@@ -97,7 +118,8 @@ lib/
 │   ├── dtc.dart             Mode 03/07/01-01-Dekodierung
 │   ├── readiness.dart       Prüfbereitschaft aus Mode 01 PID 01 Bytes B–D
 │   ├── dtc_database.dart    Klartext zu genormten Codes
-│   └── uds_dtc.dart         ISO 14229-1: 3-Byte-DTCs, Failure Type Byte, Status
+│   ├── uds_dtc.dart         ISO 14229-1: 3-Byte-DTCs, Failure Type Byte, Status
+│   └── adapter_probe.dart   Adaptertest: GATT-Profil + ELM327-Antwortverhalten
 ├── data/
 │   ├── vin_decoder.dart     VIN-Auflösung über NHTSA vPIC (kostenlos)
 │   └── topdon_report.dart   Import eigener Scan-Berichte aus PDF-Text
