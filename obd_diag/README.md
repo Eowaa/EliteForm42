@@ -83,6 +83,28 @@ iOS braucht es zwingend einen BLE-Adapter oder ein MFi-Gerät.
 | OBDLink CX / MX+ (STN2120) | ✓ | ✓ | **Empfehlung**: veröffentlichtes Datenblatt, RAW-CAN für UDS und opendbc |
 | Topdon TopScan (Pro) | ? | ? | Pairing erfolgt in Topdons eigener App; Dritt-App-Support ist nicht dokumentiert. Mit dem **Adaptertest** der App klären, bevor man darauf baut |
 
+### Die harte iOS-Grenze: BLE oder MFi
+
+Auf iOS gibt es genau zwei Wege zu einem OBD-Adapter, und nur einer steht
+dieser App offen:
+
+| Weg | Framework | Zugänglich |
+|---|---|---|
+| BLE | CoreBluetooth (`flutter_blue_plus`) | ja, ohne Lizenz |
+| MFi-Zubehör | `ExternalAccessory` | **nein** – braucht eine MFi-Lizenz von Apple und den registrierten Protokoll-String in der Info.plist |
+| Bluetooth Classic (SPP/RFCOMM) | – | **nein**, iOS unterstützt es nicht |
+
+Praktische Folge: Erscheint ein Adapter in den **iOS-Einstellungen unter
+Bluetooth**, ist das kein gutes Zeichen, sondern ein Warnsignal. Reine
+BLE-Geräte stehen dort in der Regel nicht – sie werden ausschliesslich von
+Apps gefunden. Ein Adapter, der in den Einstellungen auftaucht, spricht
+also womöglich klassisches Bluetooth oder ist MFi-zertifiziert, und beides
+ist für diese App unerreichbar.
+
+Vor dem Kauf oder dem Einplanen eines Adapters: mit einem generischen
+BLE-Scanner (nRF Connect, LightBlue) prüfen, ob er dort überhaupt
+auftaucht. Was ein solcher Scanner nicht sieht, sieht diese App auch nicht.
+
 ### Unbekannten Adapter einschätzen
 
 In der Geräteliste führt jeder Eintrag einen Test-Knopf. Der verbindet
