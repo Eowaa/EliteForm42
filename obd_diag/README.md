@@ -23,6 +23,8 @@ Funktionsfähig:
 - **ISO-TP-Mehrrahmen** (ISO 15765-2) mit Trennung nach CAN-Header
 - **VIN** über Mode 09 PID 02, dekodiert über die NHTSA-vPIC-Datenbank
 - **Readiness-Monitore** für die AU-Vorprüfung, Benzin und Diesel getrennt benannt
+- **UDS-Fehlercodes** (ISO 14229-1): 3-Byte-Codes mit genormtem Failure Type Byte
+- **Bericht-Import** aus Werkstatt-App-Exporten (eigene Messdaten des Nutzers)
 
 Noch offen – siehe Roadmap unten.
 
@@ -94,11 +96,33 @@ lib/
 │   ├── obd_pid.dart         PID-Definitionen + Messwert-Parser (Mode 01)
 │   ├── dtc.dart             Mode 03/07/01-01-Dekodierung
 │   ├── readiness.dart       Prüfbereitschaft aus Mode 01 PID 01 Bytes B–D
-│   └── dtc_database.dart    Klartext zu genormten Codes
-├── data/vin_decoder.dart    VIN-Auflösung über NHTSA vPIC (kostenlos)
+│   ├── dtc_database.dart    Klartext zu genormten Codes
+│   └── uds_dtc.dart         ISO 14229-1: 3-Byte-DTCs, Failure Type Byte, Status
+├── data/
+│   ├── vin_decoder.dart     VIN-Auflösung über NHTSA vPIC (kostenlos)
+│   └── topdon_report.dart   Import eigener Scan-Berichte aus PDF-Text
 ├── state/obd_provider.dart  Verbindungszustand, Polling-Loop, Fehlerspeicher
 └── ui/                      Verbinden / Live / Fehler
 ```
+
+### Warum der Failure Type Byte so viel wert ist
+
+OBD2-Codes haben fünf Zeichen. Ein Code aus einem Werkstatt-Scan sieht
+dagegen so aus: `B2846-13`. Das sind drei Bytes nach ISO 14229-1 – zwei für
+den Code, eines für die **Fehlerart**.
+
+Dieses dritte Byte ist genormt. `0x13` heißt „Unterbrechung im Stromkreis",
+bei jedem Hersteller. Damit lässt sich zu einem herstellerspezifischen Code,
+dessen Bauteil nirgends frei dokumentiert ist, trotzdem sagen, *was* kaputt
+ist: Kurzschluss nach Masse, Unterbrechung, Signal unplausibel, Wert
+außerhalb des Bereichs. „Unbekanntes Bauteil, aber Unterbrechung im
+Stromkreis" ist bereits die halbe Diagnose – und kostet keine Lizenz.
+
+`udsFailureTypes` deckt die gebräuchlichen Werte ab, **nicht alle**. Was
+fehlt, fängt `describeFailureType()` über die Gruppe des oberen Nibbles ab;
+erfundene Einträge wären schlimmer als eine Lücke.
+
+### Protokoll-Fallstricke
 
 Zwei Dinge, die in der Praxis die meisten Probleme machen und hier bewusst
 gelöst sind:
@@ -120,6 +144,12 @@ gelöst sind:
   Treffer. Für die Zuordnung müsste das Polling auf `ATH1` umgestellt werden.
 - **vPIC** ist eine US-Datenbank: bei rein europäischen Modellen bleiben Felder
   leer. Die VIN selbst wird trotzdem korrekt gelesen und angezeigt.
+- **Bericht-Import:** die Systemtabelle ist nur so gut wie die PDF-Extraktion.
+  Lesen manche Werkzeuge Namens- und Statusspalte getrennt, fehlen einzelne
+  Zeilen. Solche Treffer werden verworfen statt falsch benannt, und
+  `consistencyWarning` meldet die Abweichung zur Eigenangabe des Berichts.
+  An einem echten Bericht mit 44 Systemen kamen 42 sauber durch; die
+  Fehlercodes selbst und ihre Steuergeräte-Zuordnung waren vollständig.
 - **Herstellerspezifische Diagnose** (ABS, Airbag, Serviceintervall-Reset,
   Stellgliedtests) ist **nicht** enthalten und auch nicht trivial nachzurüsten:
   diese Protokolle sind proprietär und nicht öffentlich dokumentiert. Das ist
@@ -132,7 +162,8 @@ gelöst sind:
 - Fahrzeugverwaltung + Wartungsintervalle (`shared_preferences` oder `sqflite`)
 - Freeze-Frame-Daten (Mode 02)
 - Fehlerspeicher über ISO-TP, damit mehr als 3 Codes ankommen
-- UDS (ISO 14229): Steuergeräte-Scan, Mode $22 DIDs, Service-Reset.
+- UDS-Steuergeräte-Scan live am Fahrzeug (Mode $19 ReadDTCInformation,
+  Mode $22 DIDs, Service-Reset) – die Dekodierung steht bereits.
   **Braucht RAW-CAN**, also einen STN-basierten Adapter (OBDLink CX/MX+),
   kein ELM327
 - opendbc-Signale (MIT-Lizenz) für Werte jenseits von OBD2
